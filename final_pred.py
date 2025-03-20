@@ -2,7 +2,6 @@
 import numpy as np
 import math
 import cv2
-
 import os, sys
 import traceback
 import pyttsx3
