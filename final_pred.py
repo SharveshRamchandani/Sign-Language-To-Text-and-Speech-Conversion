@@ -17,18 +17,14 @@ from PIL import Image, ImageTk
 
 offset=29
 
-
-os.environ["THEANO_FLAGS"] = "device=cuda, assert_no_cpu_op=True"
-
-
 # Application :
-
 class Application:
 
-    def __init__(self):
+    def __init__(self):                   
         self.vs = cv2.VideoCapture(0)
         self.current_image = None
-        self.model = load_model('cnn8grps_rad1_model.h5')
+        model_path = os.path.join(os.path.dirname(__file__), 'cnn8grps_rad1_model.h5')
+        self.model = load_model(model_path)
         self.speak_engine=pyttsx3.init()
         self.speak_engine.setProperty("rate",100)
         voices=self.speak_engine.getProperty("voices")
@@ -748,7 +744,6 @@ class Application:
             else:
                 if self.ten_prev_char[(self.count - 0) % 10] != "Backspace":
                     self.str = self.str + self.ten_prev_char[(self.count - 0) % 10]
-
 
         if ch1=="  " and self.prev_char!="  ":
             self.str = self.str + "  "
