@@ -1,0 +1,183 @@
+/* Page Container */
+.model-container {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+  
+/* Heading */
+.model-container h1 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    text-align: center;
+    color: #2c3e50;
+}
+  
+.model-container .highlight {
+    color: #3498db;
+}
+  
+.tagline {
+    font-size: 1.2rem;
+    color: #7f8c8d;
+    margin-bottom: 2rem;
+    text-align: center;
+}
+  
+/* Model Card */
+.model-card {
+    background: white;
+    border-radius: 15px;
+    padding: 2rem;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    max-width: 600px;
+    width: 100%;
+}
+
+.model-card h2 {
+    font-size: 1.8rem;
+    color: #2c3e50;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.model-card p {
+    color: #7f8c8d;
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+/* Chat Messages */
+.chat-messages {
+    display: flex;
+    flex-direction: column;
+    height: 400px;
+}
+
+.messages-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    background: #f8f9fa;
+    border-radius: 10px;
+}
+
+.message {
+    margin-bottom: 1.5rem;
+    padding: 0.8rem 1rem;
+    border-radius: 10px;
+    max-width: 80%;
+    word-wrap: break-word;
+    position: relative;
+}
+
+.message::before {
+    content: attr(data-label);
+    position: absolute;
+    top: -20px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: #666;
+}
+
+/* Styles for sign language messages (relayed from backend) */
+.message.sign {
+    background: #e3f2fd;
+    color: #1565c0;
+    margin-right: auto;
+    border-left: 4px solid #2196f3;
+}
+
+.message.sign::before {
+    content: "SignNova User";
+    left: 0;
+}
+
+/* Styles for typed messages */
+.message.typed {
+    background: #e3f2fd;
+    color: #1565c0;
+    margin-left: auto;
+    border-right: 4px solid #2196f3;
+}
+
+.message.typed::before {
+    content: "User";
+    right: 0;
+}
+
+/* Styles for AI responses */
+.message.ai {
+    background: #e8f5e9;
+    color: #2e7d32;
+    margin-right: auto;
+    border-left: 4px solid #4caf50;
+}
+
+.message.ai::before {
+    content: "AI";
+    left: 0;
+}
+
+.input-area {
+    display: flex;
+    gap: 0.5rem;
+    padding: 1rem;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.input-area input {
+    flex: 1;
+    padding: 0.8rem;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 1rem;
+}
+
+.input-area button {
+    padding: 0.8rem 1.5rem;
+    background: #3498db;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.input-area button:hover {
+    background: #2980b9;
+}
+
+.input-area .clear-button {
+    background: #e74c3c;
+}
+
+.input-area .clear-button:hover {
+    background: #c0392b;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .model-container {
+        padding: 1rem;
+    }
+  
+    .model-card {
+        padding: 1rem;
+    }
+
+    .input-area {
+        flex-direction: column;
+    }
+
+    .input-area button {
+        width: 100%;
+    }
+}
+  

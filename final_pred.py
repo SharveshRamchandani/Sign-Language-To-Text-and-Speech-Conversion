@@ -14,8 +14,57 @@ hd = HandDetector(maxHands=1)
 hd2 = HandDetector(maxHands=1)
 import tkinter as tk
 from PIL import Image, ImageTk
+from fastapi import FastAPI, WebSocket
+from fastapi.middleware.cors import CORSMiddleware
+import base64
+import json
+import asyncio
+import threading
 
 offset=29
+
+# Create FastAPI app
+app = FastAPI()
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Create a global application instance
+app_instance = None
+active_websocket = None
+
+def run_tkinter():
+    global app_instance
+    app_instance = Application()
+    app_instance.root.mainloop()
+
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    await websocket.accept()
+    print("WebSocket connection accepted")
+    
+    global active_websocket
+    active_websocket = websocket
+    
+    try:
+        while True:
+            await asyncio.sleep(0.1)  # Keep connection alive
+    except Exception as e:
+        print(f"WebSocket error: {str(e)}")
+        traceback.print_exc()
+    finally:
+        print("WebSocket connection closed")
+        active_websocket = None
+
+@app.get("/")
+def read_root():
+    return {"message": "Sign Language Detection API is running"}
 
 # Application :
 class Application:
@@ -101,17 +150,17 @@ class Application:
         self.clear.place(x=1205, y=630)
         self.clear.config(text="Clear", font=("Courier", 20), wraplength=100, command=self.clear_fun)
 
-
-
-
+        # Add Relay button
+        self.relay = tk.Button(self.root)
+        self.relay.place(x=1105, y=630)
+        self.relay.config(text="Relay", font=("Courier", 20), wraplength=100, command=self.relay_message)
 
         self.str = " "
         self.ccc=0
         self.word = " "
         self.current_symbol = "C"
         self.photo = "Empty"
-
-
+    
         self.word1=" "
         self.word2 = " "
         self.word3 = " "
@@ -284,7 +333,7 @@ class Application:
             self.panel5.config(text=self.str, font=("Courier", 30), wraplength=1025)
         except Exception:
             print("==", traceback.format_exc())
-        finally:
+        finally:    
             self.root.after(1, self.video_loop)
 
     def distance(self,x,y):
@@ -301,7 +350,7 @@ class Application:
     def action2(self):
         idx_space = self.str.rfind(" ")
         idx_word = self.str.find(self.word, idx_space)
-        last_idx = len(self.str)
+        last_idx = len(self.str)       
         self.str=self.str[:idx_word]
         self.str=self.str+self.word2.upper()
         #self.str[idx_word:last_idx] = self.word2
@@ -374,7 +423,7 @@ class Application:
                 0] and self.pts[0][0] > self.pts[20][0]) and self.pts[5][0] > self.pts[4][0]:
                 ch1 = 2
 
-        # condition for [c0][aemnst]
+        # condition for [c0][aemnst]             
         l = [[6, 0], [6, 6], [6, 2]]
         pl = [ch1, ch2]
         if pl in l:
@@ -401,7 +450,7 @@ class Application:
                 ch1 = 3
 
         # con for [gh][pqz]
-        l = [[5, 3], [5, 0], [5, 7], [5, 4], [5, 2], [5, 1], [5, 5]]
+        l = [[5, 3], [5, 0], [5, 7], [5, 4], [5, 2], [5, 1], [5, 5]]     
         pl = [ch1, ch2]
         if pl in l:
             if self.pts[2][1] + 15 < self.pts[16][1]:
@@ -415,7 +464,7 @@ class Application:
                 ch1 = 4
 
         # con for [l][d]
-        l = [[1, 4], [1, 6], [1, 1]]
+        l = [[1, 4], [1, 6], [1, 1]]                                
         pl = [ch1, ch2]
         if pl in l:
             if (self.distance(self.pts[4], self.pts[11]) > 50) and (
@@ -566,7 +615,7 @@ class Application:
         if pl in l:
             if ((self.pts[6][1] > self.pts[8][1] and self.pts[10][1] < self.pts[12][1] and self.pts[14][1] < self.pts[16][1] and
                  self.pts[18][1] < self.pts[20][1]) and (self.pts[2][0] < self.pts[0][0]) and self.pts[4][1] > self.pts[14][1]):
-                ch1 = 1
+                ch1 = 1 
 
         l = [[4, 1], [4, 2], [4, 4]]
         pl = [ch1, ch2]
@@ -780,6 +829,21 @@ class Application:
                 self.word4 = " "
 
 
+    def relay_message(self):
+        global active_websocket
+        if active_websocket:
+            asyncio.run(self.send_message())
+
+    async def send_message(self):
+        global active_websocket
+        if active_websocket:
+            try:
+                await active_websocket.send_json({
+                    "text": self.str
+                })
+            except Exception as e:
+                print(f"Error sending message: {str(e)}")
+
     def destructor(self):
         print(self.ten_prev_char)
         self.root.destroy()
@@ -787,6 +851,11 @@ class Application:
         cv2.destroyAllWindows()
 
 
-print("Starting Application...")
-
-(Application()).root.mainloop()
+if __name__ == "__main__":
+    # Start Tkinter in a separate thread
+    tk_thread = threading.Thread(target=run_tkinter, daemon=True)
+    tk_thread.start()
+    
+    # Run FastAPI
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
